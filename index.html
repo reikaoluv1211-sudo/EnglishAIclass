@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lovedict · 하루와의 데이트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFE0EB; --paper:#FFF7FA; --berry:#6B2B45; --rose:#FF6F9C; --blush:#FFB6CF; --mint:#7CC9A9; --grey:#B9879B;
+  --font:"Jua","Nunito","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--berry);font-family:var(--font);display:flex;justify-content:center}
+.app{width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;padding:16px 16px 12px}
+header{text-align:center}
+h1{margin:0;font-size:28px;font-weight:400;letter-spacing:.5px}
+.sub{margin:2px 0 10px;font-size:14px;color:var(--grey)}
+.portrait{width:112px;height:112px;margin:0 auto 8px;border-radius:50%;overflow:hidden;border:4px solid var(--paper);box-shadow:0 0 0 3px var(--blush);background:var(--paper)}
+.portrait img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .25s}
+.portrait img.swap{opacity:0}
+.gauge{background:var(--paper);border-radius:999px;padding:8px 14px;display:flex;align-items:center;gap:10px}
+.heart{font-size:22px;line-height:1;transition:transform .3s}
+.heart.pop{transform:scale(1.35)}
+.bar{flex:1;height:12px;background:#FFD0E0;border-radius:999px;overflow:hidden}
+.fill{height:100%;width:30%;background:var(--rose);border-radius:999px;transition:width .6s cubic-bezier(.3,1.4,.5,1)}
+.num{min-width:44px;text-align:right}
+#log{flex:1;overflow-y:auto;padding:14px 2px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:82%;padding:10px 14px;border-radius:18px;font-size:17px;line-height:1.4;overflow-wrap:anywhere}
+.me{align-self:flex-end;background:var(--rose);color:#fff;border-bottom-right-radius:6px}
+.her{align-self:flex-start;background:var(--paper);border-bottom-left-radius:6px}
+.who{font-size:12px;color:var(--grey);margin:0 0 2px 4px}
+.thought{align-self:flex-start;width:92%;background:#FFEFF5;border:2px dashed var(--blush);border-radius:18px;padding:10px 12px}
+.thought p{margin:0 0 8px;font-size:13px;color:var(--grey)}
+.row{display:grid;grid-template-columns:78px 1fr 44px 40px;align-items:center;gap:8px;padding:3px 0;font-size:15px;opacity:.75}
+.row.pick{opacity:1}
+.row .w{overflow:hidden;text-overflow:ellipsis}
+.pbar{height:8px;background:#FFD7E5;border-radius:99px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--blush);border-radius:99px}
+.row.pick .pbar i{background:var(--rose)}
+.pct{font-size:13px;text-align:right}
+.sc{font-size:14px;text-align:right}
+.sc.up{color:var(--mint)} .sc.down{color:#D6456F}
+form{display:flex;gap:8px;padding-top:6px}
+input{flex:1;font:inherit;font-size:17px;padding:12px 16px;border:2px solid transparent;border-radius:999px;background:var(--paper);color:var(--berry);outline:none}
+input:focus-visible{border-color:var(--rose)}
+input::placeholder{color:var(--grey)}
+button{font:inherit;font-size:17px;border:0;border-radius:999px;background:var(--rose);color:#fff;padding:0 22px;cursor:pointer}
+button:hover{background:#F25A8C}
+button:focus-visible{outline:3px solid var(--berry);outline-offset:2px}
+button:disabled{background:var(--blush);cursor:default}
+.end{align-self:center;text-align:center;background:var(--paper);border-radius:18px;padding:14px 18px;font-size:17px}
+.end button{margin-top:10px;padding:8px 18px}
+.dots span{display:inline-block;animation:b 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{transform:none}30%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="portrait"><img id="face" src="/static/img/smile.jpg" alt="하루의 표정"></div>
+    <h1>Lovedict</h1>
+    <p class="sub">하루에게 말을 걸어 보세요. 하루가 떠올린 다음 단어가 호감도를 바꿔요.</p>
+    <div class="gauge" aria-live="polite">
+      <span class="heart" id="heart">💗</span>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <span class="num" id="num">30</span>
+    </div>
+  </header>
+
+  <main id="log">
+    <div>
+      <p class="who">하루</p>
+      <div class="msg her">안녕! 오늘 처음 만났네. 먼저 말 걸어줘서 고마워. (영어로 입력해 보세요! 예: How about today's my clothes?)</div>
+    </div>
+  </main>
+
+  <form id="form" autocomplete="off">
+    <input id="input" maxlength="300" placeholder="하루에게 한마디…" aria-label="메시지 입력">
+    <button id="send">보내기</button>
+  </form>
+</div>
+
+<script>
+const log = document.getElementById('log');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+const send = document.getElementById('send');
+const fill = document.getElementById('fill');
+const num = document.getElementById('num');
+const heart = document.getElementById('heart');
+let affection = 30, over = false;
+const FACES = {smile:'/static/img/smile.jpg', shy:'/static/img/shy.jpg', disappointed:'/static/img/disappointed.jpg'};
+Object.values(FACES).forEach(u => { new Image().src = u; });
+const face = document.getElementById('face');
+function setFace(name){
+  if (face.getAttribute('src') === FACES[name]) return;
+  face.classList.add('swap');
+  setTimeout(() => { face.src = FACES[name]; face.classList.remove('swap'); }, 250);
+}
+
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const scroll = () => log.scrollTo({top: log.scrollHeight, behavior: 'smooth'});
+
+function setAffection(v){
+  affection = v;
+  fill.style.width = v + '%';
+  num.textContent = v;
+  heart.textContent = v >= 70 ? '💖' : v >= 30 ? '💗' : v > 0 ? '💔' : '🖤';
+  heart.classList.add('pop'); setTimeout(() => heart.classList.remove('pop'), 300);
+}
+
+function addMe(text){ log.appendChild(el('div', 'msg me', esc(text))); scroll(); }
+
+function addThought(d){
+  const box = el('div', 'thought');
+  box.appendChild(el('p', '', `"You are so …" 다음에 떠오른 단어들`));
+  d.candidates.forEach(c => {
+    const pct = Math.round(c.prob * 100);
+    const s = c.score > 0 ? `+${c.score}` : `${c.score}`;
+    const row = el('div', 'row' + (c.word === d.chosen ? ' pick' : ''),
+      `<span class="w">${esc(c.word)}</span><span class="pbar"><i style="width:${pct}%"></i></span>` +
+      `<span class="pct">${pct}%</span><span class="sc ${c.score > 0 ? 'up' : c.score < 0 ? 'down' : ''}">${s}</span>`);
+    box.appendChild(row);
+  });
+  log.appendChild(box);
+}
+
+function addHer(text, delta){
+  const wrap = el('div');
+  wrap.appendChild(el('p', 'who', '하루'));
+  const sign = delta > 0 ? `+${delta}` : `${delta}`;
+  wrap.appendChild(el('div', 'msg her', `${esc(text)} <small style="color:var(--grey)">(호감도 ${sign})</small>`));
+  log.appendChild(wrap);
+}
+
+function ending(){
+  over = true; send.disabled = input.disabled = true;
+  const win = affection >= 100;
+  setFace(win ? 'shy' : 'disappointed');
+  const box = el('div', 'end', win
+    ? '💞 하루가 고백을 받아줬어요! 해피엔딩'
+    : '🥀 하루가 먼저 일어났어요… 다시 도전해 볼까요?');
+  const b = el('button', '', '다시 시작'); b.onclick = () => location.reload();
+  box.appendChild(b); log.appendChild(box); scroll();
+}
+
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text || over) return;
+  input.value = ''; send.disabled = true;
+  addMe(text);
+  const typing = el('div', 'msg her dots', '<span>●</span><span>●</span><span>●</span>');
+  log.appendChild(typing); scroll();
+  try {
+    const res = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: text, affection})});
+    const d = await res.json();
+    typing.remove();
+    if (!res.ok) throw new Error(d.error || '오류가 발생했어요.');
+    addThought(d); addHer(d.reply, d.delta); setAffection(d.affection);
+    setFace(d.delta >= 6 ? 'shy' : d.delta <= -3 ? 'disappointed' : 'smile'); scroll();
+    if (d.affection <= 0 || d.affection >= 100) return ending();
+  } catch (err) {
+    typing.remove();
+    log.appendChild(el('div', 'msg her', esc(err.message)));
+  }
+  send.disabled = false; input.focus();
+});
+</script>
+</body>
+</html>
